@@ -1,0 +1,38 @@
+{
+  "name": "aliance/compressor",
+  "description": "Pack and compress value to shorten string.",
+  "keywords": [
+    "compression",
+    "packing",
+    "msgpack",
+    "decode",
+    "encode",
+    "compress",
+    "decompress",
+    "uncompress",
+    "gz",
+    "lzf",
+    "compressor"
+  ],
+  "homepage": "https://github.com/Aliance/Compressor",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Aliance",
+      "email": "lesnykh.ilja@gmail.com"
+    }
+  ],
+  "support": {
+    "email": "lesnykh.ilja@gmail.com",
+    "issues": "https://github.com/Aliance/Compressor/issues"
+  },
+  "autoload": {
+    "psr-4": {
+      "Aliance\\Compressor\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=5.3"
+  }
+}
