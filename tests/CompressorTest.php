@@ -16,7 +16,7 @@ class CompressorTest extends TestCase
      */
     public function testCompressorCreation()
     {
-        $this->assertInstanceOf(Compressor::class, $this->Compressor);
+        $this->assertInstanceOf('\Aliance\Compressor\Compressor', $this->Compressor);
     }
 
     /**
