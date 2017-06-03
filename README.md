@@ -13,6 +13,22 @@ Install the latest version with composer:
 $ composer require aliance/compressor
 ```
 
+Tests
+---
+
+For completely tests running just call `phpunit` command from `./vendor/bin`
+
+```
+Aliance/Compressor $ ./vendor/bin/phpunit 
+PHPUnit 6.8.35 by Sebastian Bergmann and contributors.
+
+................
+
+Time: 72 ms, Memory: 5.00MB
+
+OK (16 tests, 16 assertions)
+```
+
 License
 ---
 
