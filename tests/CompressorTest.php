@@ -45,7 +45,7 @@ class CompressorTest extends TestCase
     public function getValuesDataProvider()
     {
         return array_map(function ($value) {
-            return [$value];
+            return array($value);
         }, $this->getValues());
     }
 
@@ -82,13 +82,13 @@ class CompressorTest extends TestCase
      */
     public function getDataProvider()
     {
-        $dataProvider = [];
+        $dataProvider = array();
 
         foreach ($this->getValues() as $value) {
-            $dataProvider[] = [
+            $dataProvider[] = array(
                 $value,
                 gzcompress(json_encode($value)),
-            ];
+            );
         }
 
         return $dataProvider;
@@ -99,22 +99,22 @@ class CompressorTest extends TestCase
      */
     private function getValues()
     {
-        return [
+        return array(
             'some string',
             'some very long string with dummy text here: Lorem ipsum dolor sit amet, eam falli bonorum definitionem et. An vix stet quas ignota. Impedit maluisset imperdiet sea no, deseruisse inciderint sit et, mea purto putant consulatu ad. Eam an hinc persecuti, mel noster complectitur eu, his cu mucius dicunt. Ad expetenda suavitate quo. Vide nostrum ut vix, vix lorem persius reprimique ea. Eam agam instructior theophrastus at. Ut usu unum aeterno eloquentiam, cum ex etiam dicunt lucilius, ne vix hinc perpetua forensibus. Ne porro postea aliquid sed, te quo minim gloriatur. Qui lorem aliquam labores te, cu sea aperiam invidunt tractatos.',
             '1234567890 !@#$%^&*()_+QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm[]{};\':"\\,./><<?~`',
-            [1,2,3,4,5,6,7,8,9,0],
-            [
+            array(1,2,3,4,5,6,7,8,9,0),
+            array(
                 'some key 1' => 'some value 1',
                 'some key 2' => 'some value 2',
                 'some key 3' => 'some value 3',
-                'some key 4' => [
+                'some key 4' => array(
                     'some key 4.1' => 'some value 4.1',
                     'some key 4.2' => 'some value 4.2',
                     'some key 4.3' => 'some value 4.3',
-                ],
-            ],
-        ];
+                ),
+            ),
+        );
     }
 
     /**
