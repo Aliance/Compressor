@@ -3,6 +3,7 @@ Compressor
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Packagist](https://img.shields.io/packagist/v/aliance/compressor.svg)](https://packagist.org/packages/aliance/compressor)
+[![Build Status](https://travis-ci.org/Aliance/Compressor.svg?branch=master)](https://travis-ci.org/Aliance/Compressor)
 
 Installation
 ---
