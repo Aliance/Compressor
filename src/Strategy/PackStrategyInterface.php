@@ -4,6 +4,11 @@ namespace Aliance\Compressor\Strategy;
 interface PackStrategyInterface
 {
     /**
+     * @return int
+     */
+    public function getMinLength();
+
+    /**
      * @param mixed $value
      * @return string
      */

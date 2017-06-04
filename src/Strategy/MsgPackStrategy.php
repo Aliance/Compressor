@@ -14,6 +14,12 @@ class MsgPackStrategy implements PackStrategyInterface
     }
 
     /** @inheritdoc */
+    public function getMinLength()
+    {
+        return 100;
+    }
+
+    /** @inheritdoc */
     public function pack($value)
     {
         return msgpack_pack($value);
