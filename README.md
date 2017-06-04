@@ -21,7 +21,7 @@ For completely tests running just call `phpunit` command from `./vendor/bin`
 
 ```
 Aliance/Compressor $ ./vendor/bin/phpunit 
-PHPUnit 6.8.35 by Sebastian Bergmann and contributors.
+PHPUnit 4.8.35 by Sebastian Bergmann and contributors.
 
 ................
 
