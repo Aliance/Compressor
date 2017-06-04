@@ -6,6 +6,7 @@ use Aliance\Compressor\Strategy\GzCompressionStrategy;
 use Aliance\Compressor\Strategy\JsonPackStrategy;
 use Aliance\Compressor\Strategy\LzfCompressionStrategy;
 use Aliance\Compressor\Strategy\MsgPackStrategy;
+use Aliance\Compressor\Strategy\NullCompressionStrategy;
 use Aliance\Compressor\Strategy\PackStrategyInterface;
 
 /**
@@ -15,6 +16,7 @@ class Compressor {
     const PACK_TYPE_JSON = 'json';
     const PACK_TYPE_MSGPACK = 'msgpack';
 
+    const COMPRESSION_TYPE_NULL = 'null';
     const COMPRESSION_TYPE_GZ = 'gz';
     const COMPRESSION_TYPE_LZF = 'lzf';
 
@@ -25,7 +27,7 @@ class Compressor {
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function compress($value, $packType = self::PACK_TYPE_JSON, $compressionType = self::COMPRESSION_TYPE_LZF)
+    public function compress($value, $packType = self::PACK_TYPE_JSON, $compressionType = self::COMPRESSION_TYPE_NULL)
     {
         if (!is_string($value) && !is_array($value)) {
             throw new \InvalidArgumentException(sprintf(
@@ -98,6 +100,8 @@ class Compressor {
                 return new GzCompressionStrategy();
             case self::COMPRESSION_TYPE_LZF:
                 return new LzfCompressionStrategy();
+            case self::COMPRESSION_TYPE_NULL:
+                return new NullCompressionStrategy();
             default:
                 throw new \InvalidArgumentException(sprintf(
                     'Invalid compression type passed ("%s").',
