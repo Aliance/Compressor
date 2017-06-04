@@ -13,12 +13,14 @@ use Aliance\Compressor\Strategy\PackStrategyInterface;
  * Pack string/array into short format and compress it.
  */
 class Compressor {
-    const PACK_TYPE_JSON = 'json';
-    const PACK_TYPE_MSGPACK = 'msgpack';
+    const DELIMITER = '~';
 
-    const COMPRESSION_TYPE_NULL = 'null';
-    const COMPRESSION_TYPE_GZ = 'gz';
-    const COMPRESSION_TYPE_LZF = 'lzf';
+    const PACK_TYPE_JSON = 'j';
+    const PACK_TYPE_MSGPACK = 'm';
+
+    const COMPRESSION_TYPE_NULL = 'n';
+    const COMPRESSION_TYPE_GZ = 'g';
+    const COMPRESSION_TYPE_LZF = 'l';
 
     /**
      * @param mixed $value
@@ -36,17 +38,23 @@ class Compressor {
             ));
         }
 
-        $packedValue = $this->getPackStrategy($packType)->pack($value);
+        $packStrategy = $this->getPackStrategy($packType);
+        $packedValue = $packStrategy->pack($value);
+
+        if (strlen($packedValue) < $packStrategy->getMinLength()) {
+            $compressionType = self::COMPRESSION_TYPE_NULL;
+        }
 
         $compressedValue = $this->getCompressionStrategy($compressionType)->compress($packedValue);
 
-        return $compressedValue;
+        return $packType . self::DELIMITER . $compressionType . self::DELIMITER . $compressedValue;
     }
 
     /**
      * @param string $value
      * @return mixed
      * @throws \InvalidArgumentException
+     * @throws \LogicException
      */
     public function decompress($value)
     {
@@ -61,11 +69,21 @@ class Compressor {
             throw new \InvalidArgumentException('Zero-length string given to decompress.');
         }
 
-        $decompressedValue = $this->getCompressionStrategy(self::COMPRESSION_TYPE_GZ)->decompress($value);
+        $matches = explode(self::DELIMITER, $value);
 
-        $unpackedValue = $this->getPackStrategy(self::PACK_TYPE_JSON)->unpack($decompressedValue);
+        if (count($matches) === 0) {
+            return $value;
+        }
 
-        return $unpackedValue;
+        if (count($matches) !== 3) {
+            throw new \LogicException('Something wrong with string decompressing.');
+        }
+
+        $compressionType = isset($matches[1]) ? $matches[1] : self::COMPRESSION_TYPE_NULL;
+
+        return $this->getPackStrategy($matches[0])->unpack(
+            $this->getCompressionStrategy($compressionType)->decompress($matches[2])
+        );
     }
 
     /**
