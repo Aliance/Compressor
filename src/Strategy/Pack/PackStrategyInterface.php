@@ -1,5 +1,5 @@
 <?php
-namespace Aliance\Compressor\Strategy;
+namespace Aliance\Compressor\Strategy\Pack;
 
 interface PackStrategyInterface
 {
