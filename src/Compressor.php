@@ -1,6 +1,7 @@
 <?php
 namespace Aliance\Compressor;
 
+use Aliance\Bitmask\Bitmask;
 use Aliance\Compressor\Strategy\Compression\CompressionStrategyInterface;
 use Aliance\Compressor\Strategy\Compression\GzCompressionStrategy;
 use Aliance\Compressor\Strategy\Compression\LzfCompressionStrategy;
@@ -15,7 +16,17 @@ use Aliance\Compressor\Strategy\Pack\SerializePackStrategy;
  * Pack string/array into short format and compress it.
  */
 class Compressor {
-    const DELIMITER = '~';
+    /**
+     * Two-bits prefix: hex representation of chars 'I' (49) and 'L' (4c).
+     * @var int
+     */
+    const PREFIX = 0x494c;
+
+    /**
+     * Bitmask for applying on unpacked options for finding used type
+     * @var int
+     */
+    const TYPE_BITMASK = 0b0011;
 
     const PACK_TYPE_NULL       = 0;
     const PACK_TYPE_JSON       = 1;
@@ -45,13 +56,18 @@ class Compressor {
         $packStrategy = $this->getPackStrategy($packType);
         $packedValue = $packStrategy->pack($value);
 
-        if (strlen($packedValue) < $packStrategy->getMinLength()) {
-            $compressionType = self::COMPRESSION_TYPE_NULL;
-        }
+//        if (strlen($packedValue) < $packStrategy->getMinLength()) {
+            //$compressionType = self::COMPRESSION_TYPE_NULL;
+//        }
 
         $compressedValue = $this->getCompressionStrategy($compressionType)->compress($packedValue);
 
-        return $packType . self::DELIMITER . $compressionType . self::DELIMITER . $compressedValue;
+        return pack(
+            'nLa*',
+            self::PREFIX,
+            ($packType << 2) + $compressionType,
+            $compressedValue
+        );
     }
 
     /**
@@ -73,20 +89,17 @@ class Compressor {
             throw new \InvalidArgumentException('Zero-length string given to decompress.');
         }
 
-        $matches = explode(self::DELIMITER, $value);
+        $unpackedData = unpack('nprefix/Loptions/a*data', $value);
 
-        if (count($matches) === 0) {
-            return $value;
+        if ($unpackedData['prefix'] != self::PREFIX) {
+            throw new \LogicException('Incorrect format.');
         }
 
-        if (count($matches) !== 3) {
-            throw new \LogicException('Something wrong with string decompressing.');
-        }
+        $compressionType = ($unpackedData['options'] >> 0) & self::TYPE_BITMASK;
+        $packType        = ($unpackedData['options'] >> 2) & self::TYPE_BITMASK;
 
-        $compressionType = isset($matches[1]) ? $matches[1] : self::COMPRESSION_TYPE_NULL;
-
-        return $this->getPackStrategy($matches[0])->unpack(
-            $this->getCompressionStrategy($compressionType)->decompress($matches[2])
+        return $this->getPackStrategy($packType)->unpack(
+            $this->getCompressionStrategy($compressionType)->decompress($unpackedData['data'])
         );
     }
 
