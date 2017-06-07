@@ -32,6 +32,11 @@
       "Aliance\\Compressor\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Aliance\\Compressor\\Tests\\": "tests/"
+    }
+  },
   "require": {
     "php": ">=5.5"
   },
