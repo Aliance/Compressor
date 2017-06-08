@@ -10,7 +10,6 @@ use Aliance\Compressor\Strategy\Pack\JsonPackStrategy;
 use Aliance\Compressor\Strategy\Pack\MsgPackStrategy;
 use Aliance\Compressor\Strategy\Pack\NullPackStrategy;
 use Aliance\Compressor\Strategy\Pack\PackStrategyInterface;
-use Aliance\Compressor\Strategy\Pack\SerializePackStrategy;
 
 /**
  * Pack string/array into short format and compress it.
@@ -111,8 +110,6 @@ class Compressor {
                 return new JsonPackStrategy();
             case self::PACK_TYPE_MSGPACK:
                 return new MsgPackStrategy();
-            case self::PACK_TYPE_SERIALIZER:
-                return new SerializePackStrategy();
             default:
                 throw new \InvalidArgumentException(sprintf(
                     'Invalid pack type passed ("%s").',
