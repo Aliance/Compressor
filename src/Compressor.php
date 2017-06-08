@@ -17,16 +17,10 @@ use Aliance\Compressor\Strategy\Pack\SerializePackStrategy;
  */
 class Compressor {
     /**
-     * Two-bits prefix: hex representation of chars 'I' (49) and 'L' (4c).
+     * Two-bytes prefix: hex representation of chars 'I' (49) and 'L' (4c).
      * @var int
      */
     const PREFIX = 0x494c;
-
-    /**
-     * Bitmask for applying on unpacked options for finding used type
-     * @var int
-     */
-    const TYPE_BITMASK = 0b0011;
 
     const PACK_TYPE_NULL       = 0;
     const PACK_TYPE_JSON       = 1;
@@ -65,7 +59,7 @@ class Compressor {
         return pack(
             'nLa*',
             self::PREFIX,
-            ($packType << 2) + $compressionType,
+            ($compressionType << 2) + $packType,
             $compressedValue
         );
     }
@@ -95,8 +89,8 @@ class Compressor {
             throw new \LogicException('Incorrect format.');
         }
 
-        $compressionType = ($unpackedData['options'] >> 0) & self::TYPE_BITMASK;
-        $packType        = ($unpackedData['options'] >> 2) & self::TYPE_BITMASK;
+        $packType        = ($unpackedData['options'] >> 0) & 0b11;
+        $compressionType = ($unpackedData['options'] >> 2) & 0b11;
 
         return $this->getPackStrategy($packType)->unpack(
             $this->getCompressionStrategy($compressionType)->decompress($unpackedData['data'])
