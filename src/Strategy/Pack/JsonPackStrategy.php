@@ -1,8 +1,14 @@
 <?php
-namespace Aliance\Compressor\Strategy;
+namespace Aliance\Compressor\Strategy\Pack;
 
 class JsonPackStrategy implements PackStrategyInterface
 {
+    /** @inheritdoc */
+    public function getMinLength()
+    {
+        return 150;
+    }
+
     /** @inheritdoc */
     public function pack($value)
     {

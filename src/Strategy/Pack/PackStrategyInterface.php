@@ -1,8 +1,13 @@
 <?php
-namespace Aliance\Compressor\Strategy;
+namespace Aliance\Compressor\Strategy\Pack;
 
 interface PackStrategyInterface
 {
+    /**
+     * @return int
+     */
+    public function getMinLength();
+
     /**
      * @param mixed $value
      * @return string

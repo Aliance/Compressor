@@ -1,5 +1,5 @@
 <?php
-namespace Aliance\Compressor\Strategy;
+namespace Aliance\Compressor\Strategy\Pack;
 
 class MsgPackStrategy implements PackStrategyInterface
 {
@@ -11,6 +11,12 @@ class MsgPackStrategy implements PackStrategyInterface
         if (!extension_loaded('msgpack')) {
             throw new \RuntimeException('Missed required PHP extension "msgpack".');
         }
+    }
+
+    /** @inheritdoc */
+    public function getMinLength()
+    {
+        return 100;
     }
 
     /** @inheritdoc */

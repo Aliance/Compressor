@@ -1,31 +1,43 @@
 <?php
 namespace Aliance\Compressor;
 
-use Aliance\Compressor\Strategy\CompressionStrategyInterface;
-use Aliance\Compressor\Strategy\GzCompressionStrategy;
-use Aliance\Compressor\Strategy\JsonPackStrategy;
-use Aliance\Compressor\Strategy\LzfCompressionStrategy;
-use Aliance\Compressor\Strategy\MsgPackStrategy;
-use Aliance\Compressor\Strategy\PackStrategyInterface;
+use Aliance\Bitmask\Bitmask;
+use Aliance\Compressor\Strategy\Compression\CompressionStrategyInterface;
+use Aliance\Compressor\Strategy\Compression\GzCompressionStrategy;
+use Aliance\Compressor\Strategy\Compression\LzfCompressionStrategy;
+use Aliance\Compressor\Strategy\Compression\NullCompressionStrategy;
+use Aliance\Compressor\Strategy\Pack\JsonPackStrategy;
+use Aliance\Compressor\Strategy\Pack\MsgPackStrategy;
+use Aliance\Compressor\Strategy\Pack\NullPackStrategy;
+use Aliance\Compressor\Strategy\Pack\PackStrategyInterface;
 
 /**
  * Pack string/array into short format and compress it.
  */
 class Compressor {
-    const PACK_TYPE_JSON = 'json';
-    const PACK_TYPE_MSGPACK = 'msgpack';
+    /**
+     * Two-bytes prefix: hex representation of chars 'I' (49) and 'L' (4c).
+     * @var int
+     */
+    const PREFIX = 0x494c;
 
-    const COMPRESSION_TYPE_GZ = 'gz';
-    const COMPRESSION_TYPE_LZF = 'lzf';
+    const PACK_TYPE_NULL       = 0;
+    const PACK_TYPE_JSON       = 1;
+    const PACK_TYPE_MSGPACK    = 2;
+    const PACK_TYPE_SERIALIZER = 3;
+
+    const COMPRESSION_TYPE_NULL = 0;
+    const COMPRESSION_TYPE_GZ   = 1;
+    const COMPRESSION_TYPE_LZF  = 2;
 
     /**
      * @param mixed $value
-     * @param string $packType
-     * @param string $compressionType
+     * @param int $packType
+     * @param int $compressionType
      * @return string
      * @throws \InvalidArgumentException
      */
-    public function compress($value, $packType = self::PACK_TYPE_JSON, $compressionType = self::COMPRESSION_TYPE_LZF)
+    public function compress($value, $packType = self::PACK_TYPE_JSON, $compressionType = self::COMPRESSION_TYPE_NULL)
     {
         if (!is_string($value) && !is_array($value)) {
             throw new \InvalidArgumentException(sprintf(
@@ -34,17 +46,28 @@ class Compressor {
             ));
         }
 
-        $packedValue = $this->getPackStrategy($packType)->pack($value);
+        $packStrategy = $this->getPackStrategy($packType);
+        $packedValue = $packStrategy->pack($value);
+
+//        if (strlen($packedValue) < $packStrategy->getMinLength()) {
+            //$compressionType = self::COMPRESSION_TYPE_NULL;
+//        }
 
         $compressedValue = $this->getCompressionStrategy($compressionType)->compress($packedValue);
 
-        return $compressedValue;
+        return pack(
+            'nLa*',
+            self::PREFIX,
+            ($compressionType << 2) + $packType,
+            $compressedValue
+        );
     }
 
     /**
      * @param string $value
      * @return mixed
      * @throws \InvalidArgumentException
+     * @throws \LogicException
      */
     public function decompress($value)
     {
@@ -59,11 +82,18 @@ class Compressor {
             throw new \InvalidArgumentException('Zero-length string given to decompress.');
         }
 
-        $decompressedValue = $this->getCompressionStrategy(self::COMPRESSION_TYPE_GZ)->decompress($value);
+        $unpackedData = unpack('nprefix/Loptions/a*data', $value);
 
-        $unpackedValue = $this->getPackStrategy(self::PACK_TYPE_JSON)->unpack($decompressedValue);
+        if ($unpackedData['prefix'] != self::PREFIX) {
+            throw new \LogicException('Incorrect format.');
+        }
 
-        return $unpackedValue;
+        $packType        = ($unpackedData['options'] >> 0) & 0b11;
+        $compressionType = ($unpackedData['options'] >> 2) & 0b11;
+
+        return $this->getPackStrategy($packType)->unpack(
+            $this->getCompressionStrategy($compressionType)->decompress($unpackedData['data'])
+        );
     }
 
     /**
@@ -74,6 +104,8 @@ class Compressor {
     private function getPackStrategy($packType)
     {
         switch ($packType) {
+            case self::PACK_TYPE_NULL:
+                return new NullPackStrategy();
             case self::PACK_TYPE_JSON:
                 return new JsonPackStrategy();
             case self::PACK_TYPE_MSGPACK:
@@ -94,6 +126,8 @@ class Compressor {
     private function getCompressionStrategy($compressionType)
     {
         switch ($compressionType) {
+            case self::COMPRESSION_TYPE_NULL:
+                return new NullCompressionStrategy();
             case self::COMPRESSION_TYPE_GZ:
                 return new GzCompressionStrategy();
             case self::COMPRESSION_TYPE_LZF:
